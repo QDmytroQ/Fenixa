@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".env" />
+    <File Path="docker-compose.yml" />
+    <File Path="Dockerfile" />
+  </Folder>
+  <Project Path="Content/Content.csproj" Id="91b79365-0e8e-486b-a4ba-e43a0ceb1298" />
+  <Project Path="Fenixa.Api/Fenixa.Api.csproj" />
+  <Project Path="Identity/Identity.csproj" Id="c3e3c375-2c3a-48ab-9f06-990bfeacf568" />
+  <Project Path="Profile/Profile.csproj" />
+  <Project Path="Shared/Shared.csproj" Id="79454acd-b6cf-47f6-b936-65eda1e0e4e5" />
+  <Project Path="Study/Study.csproj" Id="4f60c4fb-a6b1-4b49-b868-91e4cf90934a" />
+</Solution>

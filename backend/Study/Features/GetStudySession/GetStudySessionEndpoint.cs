@@ -1,0 +1,34 @@
+using MediatR;
+using Shared.Abstractions;
+
+namespace Study.Features.GetStudySession;
+
+public static class GetStudySessionEndpoint
+{
+    public static RouteGroupBuilder MapGetStudySessionEndpoint(this RouteGroupBuilder group)
+    {
+        group.MapGet("/session", async (
+            string? targetLanguage,
+            int maxCards,
+            IMediator mediator,
+            ICurrentUserService currentUser,
+            CancellationToken cancellationToken) =>
+        {
+            if (currentUser.UserId is null)
+            {
+                return Results.Unauthorized();
+            }
+
+            var query = new GetStudySessionQuery(
+                currentUser.UserId.Value,
+                targetLanguage,
+                maxCards <= 0 ? 20 : maxCards);
+
+            var response = await mediator.Send(query, cancellationToken);
+            return Results.Ok(response);
+        })
+        .RequireAuthorization();
+
+        return group;
+    }
+}

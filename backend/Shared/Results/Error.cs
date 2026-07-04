@@ -15,4 +15,7 @@ public sealed record Error(string Code, string Message, ErrorType Type = ErrorTy
 
     public static Error Validation(string message) =>
         new("Validation", message, ErrorType.Validation);
+
+    public static Error Unauthorized(string message) =>
+        new("Unauthorized", message, ErrorType.Unauthorized);
 }

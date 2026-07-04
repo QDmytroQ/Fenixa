@@ -1,5 +1,4 @@
 using FluentValidation;
-using System.Text.RegularExpressions;
 using Identity.Domain.Entities;
 using Identity.Infrastructure;
 using Identity.Persistence;
@@ -7,6 +6,8 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Shared.IntegrationEvents;
 using Shared.Results;
+using System.Collections.ObjectModel;
+using System.Text.RegularExpressions;
 
 namespace Identity.Features.RegisterUser;
 
@@ -39,8 +40,6 @@ public sealed class RegisterUserCommandValidator : AbstractValidator<RegisterUse
 
 public sealed class RegisterUserHandler : IRequestHandler<RegisterUserCommand, Result<RegisterUserAuthResult>>
 {
-    private const int RefreshTokenLifetimeDays = 7;
-
     private readonly IdentityDbContext _dbContext;
     private readonly IPublisher _publisher;
     private readonly JwtProvider _jwtProvider;
@@ -88,7 +87,6 @@ public sealed class RegisterUserHandler : IRequestHandler<RegisterUserCommand, R
         user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
 
         var refreshTokenPair = _refreshTokenGenerator.Generate();
-        var refreshExpires = DateTimeOffset.UtcNow.AddDays(RefreshTokenLifetimeDays);
 
         var refreshToken = new Domain.Entities.RefreshToken
         {
@@ -97,7 +95,7 @@ public sealed class RegisterUserHandler : IRequestHandler<RegisterUserCommand, R
             Token = refreshTokenPair.TokenHash,
             IsValid = true,
             Created = DateTimeOffset.UtcNow,
-            Expires = refreshExpires
+            Expires = refreshTokenPair.Expires
         };
 
         _dbContext.Users.Add(user);
@@ -114,6 +112,6 @@ public sealed class RegisterUserHandler : IRequestHandler<RegisterUserCommand, R
             user.Id,
             accessToken,
             refreshTokenPair.RawToken,
-            refreshExpires));
+            refreshTokenPair.Expires));
     }
 }

@@ -5,10 +5,17 @@ namespace Identity.Infrastructure;
 
 public sealed class RefreshTokenGenerator : IRefreshTokenGenerator
 {
+    private readonly RefreshTokenOptions _tokenOptions;
+    public RefreshTokenGenerator(RefreshTokenOptions tokenOptions)
+    {
+        _tokenOptions = tokenOptions;
+    }
+
     public RefreshTokenPair Generate()
     {
         var rawToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-        return new RefreshTokenPair(rawToken, HashToken(rawToken));
+        var expires = DateTimeOffset.UtcNow.AddDays(_tokenOptions.LifetimeDays);
+        return new RefreshTokenPair(rawToken, HashToken(rawToken), expires);
     }
 
     public string HashToken(string rawToken)

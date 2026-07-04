@@ -24,7 +24,7 @@ public static class IdentityModuleExtensions
                 configuration.GetConnectionString("DefaultConnection"),
                 sql => sql.MigrationsHistoryTable("__EFMigrationsHistory", "identity")));
 
-        services.Configure<AuthOptions>(configuration.GetSection("Auth"));
+        services.Configure<RefreshTokenOptions>(configuration.GetSection("RefreshToken"));
         services.AddSingleton(Microsoft.Extensions.Options.Options.Create(cryptoOptions));
         services.AddSingleton<JwtProvider>();
         services.AddScoped<IGeminiKeyEncryptor, GeminiKeyEncryptor>();

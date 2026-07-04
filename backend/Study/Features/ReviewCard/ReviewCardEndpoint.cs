@@ -14,7 +14,7 @@ public static class ReviewCardEndpoint
             Guid cardId,
             ReviewCardRequest request,
             IMediator mediator,
-            ICurrentUserService currentUser,
+            ICurrentUserContext currentUser,
             CancellationToken cancellationToken) =>
         {
             if (currentUser.UserId is null)

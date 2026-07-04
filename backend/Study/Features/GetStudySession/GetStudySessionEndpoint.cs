@@ -11,7 +11,7 @@ public static class GetStudySessionEndpoint
             string? targetLanguage,
             int maxCards,
             IMediator mediator,
-            ICurrentUserService currentUser,
+            ICurrentUserContext currentUser,
             CancellationToken cancellationToken) =>
         {
             if (currentUser.UserId is null)

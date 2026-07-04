@@ -1,7 +1,14 @@
 using MediatR;
+using Shared.Results;
 
 namespace Identity.Features.RefreshToken;
 
-public sealed record RefreshTokenCommand(string RefreshToken) : IRequest<RefreshTokenResponse>;
+public sealed record RefreshTokenCommand(string RefreshToken) : IRequest<Result<RefreshTokenAuthResult>>;
 
-public sealed record RefreshTokenResponse(string AccessToken, string RefreshToken);
+public sealed record RefreshTokenAuthResult(
+    Guid UserId,
+    string AccessToken,
+    string RawRefreshToken,
+    DateTimeOffset RefreshExpires);
+
+public sealed record RefreshTokenResponse(Guid UserId);

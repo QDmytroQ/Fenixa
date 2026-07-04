@@ -1,23 +1,39 @@
+using Identity.Infrastructure;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 
 namespace Identity.Features.RefreshToken;
-
-public sealed record RefreshTokenRequest(string RefreshToken);
 
 public static class RefreshTokenEndpoint
 {
     public static RouteGroupBuilder MapRefreshTokenEndpoint(this RouteGroupBuilder group)
     {
         group.MapPost("/refresh", async (
-            RefreshTokenRequest request,
             IMediator mediator,
+            IAuthCookieService authCookieService,
+            HttpContext httpContext,
             CancellationToken cancellationToken) =>
         {
-            var command = new RefreshTokenCommand(request.RefreshToken);
-            var response = await mediator.Send(command, cancellationToken);
-            return Results.Ok(response);
-        })
-        .RequireAuthorization("RefreshPolicy");
+            var refreshToken = httpContext.Request.Cookies[AuthCookieService.RefreshTokenCookieName];
+            if (string.IsNullOrWhiteSpace(refreshToken))
+            {
+                return Results.Unauthorized();
+            }
+
+            var command = new RefreshTokenCommand(refreshToken);
+            var result = await mediator.Send(command, cancellationToken);
+
+            return result.ToHttpResult(auth =>
+            {
+                authCookieService.SetAuthCookies(
+                    httpContext,
+                    auth.AccessToken,
+                    auth.RawRefreshToken,
+                    auth.RefreshExpires);
+
+                return Results.Ok(new RefreshTokenResponse(auth.UserId));
+            });
+        });
 
         return group;
     }

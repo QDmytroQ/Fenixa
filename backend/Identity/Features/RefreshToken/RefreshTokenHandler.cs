@@ -1,5 +1,6 @@
 using FluentValidation;
 using MediatR;
+using Shared.Results;
 
 namespace Identity.Features.RefreshToken;
 
@@ -11,9 +12,11 @@ public sealed class RefreshTokenCommandValidator : AbstractValidator<RefreshToke
     }
 }
 
-public sealed class RefreshTokenHandler : IRequestHandler<RefreshTokenCommand, RefreshTokenResponse>
+public sealed class RefreshTokenHandler : IRequestHandler<RefreshTokenCommand, Result<RefreshTokenAuthResult>>
 {
-    public Task<RefreshTokenResponse> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
+    public Task<Result<RefreshTokenAuthResult>> Handle(
+        RefreshTokenCommand request,
+        CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

@@ -60,19 +60,6 @@ namespace Identity.Infrastructure
                 DateTime.UtcNow.AddMinutes(AccessTokenLifetimeMinutes));
         }
 
-        public string GenerateRefreshToken(Guid userId, int days = 7)
-        {
-            Claim[] claims =
-            [
-                new(ClaimTypes.NameIdentifier, userId.ToString()),
-                new("tokenType", "refresh"),
-                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            ];
-
-            return GenerateTokenInternal(
-                claims, DateTime.UtcNow.AddDays(days));
-        }
-
         private string GenerateTokenInternal(Claim[] claims, DateTime expires)
         {
             var token = new JwtSecurityToken(

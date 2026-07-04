@@ -9,7 +9,7 @@ public static class GetUserDecksEndpoint
     {
         group.MapGet("/decks", async (
             IMediator mediator,
-            ICurrentUserService currentUser,
+            ICurrentUserContext currentUser,
             CancellationToken cancellationToken) =>
         {
             if (currentUser.UserId is null)

@@ -3,11 +3,11 @@ using Shared.Abstractions;
 
 namespace Fenixa.Api.Services;
 
-public sealed class CurrentUserService : ICurrentUserService
+public sealed class CurrentUserContext : ICurrentUserContext
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public CurrentUserService(IHttpContextAccessor httpContextAccessor)
+    public CurrentUserContext(IHttpContextAccessor httpContextAccessor)
     {
         _httpContextAccessor = httpContextAccessor;
     }
@@ -20,10 +20,4 @@ public sealed class CurrentUserService : ICurrentUserService
             return Guid.TryParse(userId, out var id) ? id : null;
         }
     }
-
-    public string? Username =>
-        _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.Name);
-
-    public string? Email =>
-        _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.Email);
 }

@@ -24,9 +24,13 @@ public static class IdentityModuleExtensions
                 configuration.GetConnectionString("DefaultConnection"),
                 sql => sql.MigrationsHistoryTable("__EFMigrationsHistory", "identity")));
 
+        services.Configure<AuthOptions>(configuration.GetSection("Auth"));
         services.AddSingleton(Microsoft.Extensions.Options.Options.Create(cryptoOptions));
         services.AddSingleton<JwtProvider>();
         services.AddScoped<IGeminiKeyEncryptor, GeminiKeyEncryptor>();
+        services.AddScoped<IUserPasswordHasher, UserPasswordHasher>();
+        services.AddScoped<IRefreshTokenGenerator, RefreshTokenGenerator>();
+        services.AddScoped<IAuthCookieService, AuthCookieService>();
 
         services.AddValidatorsFromAssembly(typeof(RegisterUserCommandValidator).Assembly);
 

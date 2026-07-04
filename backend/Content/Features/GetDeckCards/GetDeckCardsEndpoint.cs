@@ -10,7 +10,7 @@ public static class GetDeckCardsEndpoint
         group.MapGet("/decks/{deckId:guid}/cards", async (
             Guid deckId,
             IMediator mediator,
-            ICurrentUserService currentUser,
+            ICurrentUserContext currentUser,
             CancellationToken cancellationToken) =>
         {
             if (currentUser.UserId is null)

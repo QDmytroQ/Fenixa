@@ -9,7 +9,7 @@ public static class GetStudyStatisticsEndpoint
     {
         group.MapGet("/statistics", async (
             IMediator mediator,
-            ICurrentUserService currentUser,
+            ICurrentUserContext currentUser,
             CancellationToken cancellationToken) =>
         {
             if (currentUser.UserId is null)

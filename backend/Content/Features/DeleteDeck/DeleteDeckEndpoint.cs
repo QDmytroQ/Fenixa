@@ -10,7 +10,7 @@ public static class DeleteDeckEndpoint
         group.MapDelete("/decks/{deckId:guid}", async (
             Guid deckId,
             IMediator mediator,
-            ICurrentUserService currentUser,
+            ICurrentUserContext currentUser,
             CancellationToken cancellationToken) =>
         {
             if (currentUser.UserId is null)

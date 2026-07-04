@@ -1,5 +1,6 @@
 using FluentValidation;
 using MediatR;
+using Shared.Results;
 
 namespace Identity.Features.LoginUser;
 
@@ -12,9 +13,9 @@ public sealed class LoginUserCommandValidator : AbstractValidator<LoginUserComma
     }
 }
 
-public sealed class LoginUserHandler : IRequestHandler<LoginUserCommand, LoginUserResponse>
+public sealed class LoginUserHandler : IRequestHandler<LoginUserCommand, Result<LoginUserAuthResult>>
 {
-    public Task<LoginUserResponse> Handle(LoginUserCommand request, CancellationToken cancellationToken)
+    public Task<Result<LoginUserAuthResult>> Handle(LoginUserCommand request, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

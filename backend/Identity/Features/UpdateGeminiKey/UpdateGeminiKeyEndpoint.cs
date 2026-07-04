@@ -11,7 +11,7 @@ public static class UpdateGeminiKeyEndpoint
         group.MapPut("/gemini-key", async (
             UpdateGeminiKeyRequest request,
             IMediator mediator,
-            Shared.Abstractions.ICurrentUserService currentUser,
+            Shared.Abstractions.ICurrentUserContext currentUser,
             CancellationToken cancellationToken) =>
         {
             if (currentUser.UserId is null)

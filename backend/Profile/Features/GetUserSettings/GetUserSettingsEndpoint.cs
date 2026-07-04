@@ -9,7 +9,7 @@ public static class GetUserSettingsEndpoint
     {
         group.MapGet("/settings", async (
             IMediator mediator,
-            ICurrentUserService currentUser,
+            ICurrentUserContext currentUser,
             CancellationToken cancellationToken) =>
         {
             if (currentUser.UserId is null)

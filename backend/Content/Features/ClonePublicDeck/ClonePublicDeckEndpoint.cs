@@ -10,7 +10,7 @@ public static class ClonePublicDeckEndpoint
         group.MapPost("/decks/{sourceDeckId:guid}/clone", async (
             Guid sourceDeckId,
             IMediator mediator,
-            ICurrentUserService currentUser,
+            ICurrentUserContext currentUser,
             CancellationToken cancellationToken) =>
         {
             if (currentUser.UserId is null)

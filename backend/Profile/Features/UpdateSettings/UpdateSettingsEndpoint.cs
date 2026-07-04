@@ -17,7 +17,7 @@ public static class UpdateSettingsEndpoint
         group.MapPut("/settings", async (
             UpdateSettingsRequest request,
             IMediator mediator,
-            ICurrentUserService currentUser,
+            ICurrentUserContext currentUser,
             CancellationToken cancellationToken) =>
         {
             if (currentUser.UserId is null)

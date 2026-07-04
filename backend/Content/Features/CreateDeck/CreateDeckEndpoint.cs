@@ -12,7 +12,7 @@ public static class CreateDeckEndpoint
         group.MapPost("/decks", async (
             CreateDeckRequest request,
             IMediator mediator,
-            ICurrentUserService currentUser,
+            ICurrentUserContext currentUser,
             CancellationToken cancellationToken) =>
         {
             if (currentUser.UserId is null)

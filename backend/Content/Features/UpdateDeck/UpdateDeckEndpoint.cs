@@ -13,7 +13,7 @@ public static class UpdateDeckEndpoint
             Guid deckId,
             UpdateDeckRequest request,
             IMediator mediator,
-            ICurrentUserService currentUser,
+            ICurrentUserContext currentUser,
             CancellationToken cancellationToken) =>
         {
             if (currentUser.UserId is null)

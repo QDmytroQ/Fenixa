@@ -1,6 +1,8 @@
-using Content;
 using Fenixa.Api;
+using Fenixa.Api.Behaviors;
+using Fenixa.Api.Infrastructure;
 using Fenixa.Api.Services;
+using Content;
 using Identity;
 using Identity.Features.LoginUser;
 using Identity.Features.RefreshToken;
@@ -40,7 +42,9 @@ var cryptoOptions = new CryptoOptions
 };
 
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddScoped<ICurrentUserContext, CurrentUserContext>();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 builder.Services.AddMediatR(cfg =>
 {
@@ -49,6 +53,8 @@ builder.Services.AddMediatR(cfg =>
         typeof(GetUserSettingsQuery).Assembly,
         typeof(Content.Features.CreateDeck.CreateDeckCommand).Assembly,
         typeof(ReviewCardCommand).Assembly);
+
+    cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 
 builder.Services
@@ -70,6 +76,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseExceptionHandler();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

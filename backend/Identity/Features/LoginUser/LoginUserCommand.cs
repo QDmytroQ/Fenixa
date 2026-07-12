@@ -1,5 +1,6 @@
 using MediatR;
 using Shared.Results;
+using Identity.Domain;
 
 namespace Identity.Features.LoginUser;
 
@@ -7,10 +8,13 @@ public sealed record LoginUserCommand(
     string Email,
     string Password) : IRequest<Result<LoginUserAuthResult>>;
 
-public sealed record LoginUserAuthResult(
-    Guid UserId,
-    string AccessToken,
-    string RawRefreshToken,
-    DateTimeOffset RefreshExpires);
 
-public sealed record LoginUserResponse(Guid UserId);
+public record LoginUserAuthResult(
+    Guid UserId,
+    LoginFlowStatus Status,
+    string? TwoFactorToken = null,
+    string? EmailConfirmationToken = null,
+    DateTimeOffset? ExpiresAt = null
+);
+
+public sealed record LoginUserResponse(Guid UserId, string NextStep);

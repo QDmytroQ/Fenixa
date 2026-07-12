@@ -10,11 +10,11 @@ public static class RefreshTokenEndpoint
     {
         group.MapPost("/refresh", async (
             IMediator mediator,
-            IAuthCookieService authCookieService,
+            IAuthCookieWriter authCookieService,
             HttpContext httpContext,
             CancellationToken cancellationToken) =>
         {
-            var refreshToken = httpContext.Request.Cookies[AuthCookieService.RefreshTokenCookieName];
+            var refreshToken = httpContext.Request.Cookies[AuthCookieWriter.RefreshTokenCookieName];
             if (string.IsNullOrWhiteSpace(refreshToken))
             {
                 return Results.Unauthorized();
@@ -25,7 +25,7 @@ public static class RefreshTokenEndpoint
 
             return result.ToHttpResult(auth =>
             {
-                authCookieService.SetAuthCookies(
+                authCookieService.Append(
                     httpContext,
                     auth.AccessToken,
                     auth.RawRefreshToken,

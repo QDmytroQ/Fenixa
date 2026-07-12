@@ -1,10 +1,8 @@
 using FluentValidation;
-using Identity.Domain.Entities;
-using Identity.Features.RegisterUser;
+using Identity.Domain;
 using Identity.Infrastructure;
 using Identity.Persistence;
 using MediatR;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Shared.IntegrationEvents;
 using Shared.Results;
@@ -24,29 +22,32 @@ public sealed class LoginUserHandler : IRequestHandler<LoginUserCommand, Result<
 {
     private readonly IdentityDbContext _dbContext;
     private readonly IPublisher _publisher;
-    private readonly JwtProvider _jwtProvider;
     private readonly IUserPasswordHasher _passwordHasher;
-    private readonly IRefreshTokenGenerator _refreshTokenGenerator;
+    private readonly IOtpService _otpService;
+    private readonly TwoFactorTokenGenerator _twoFactorTokenGenerator;
+    private readonly EmailVerificationTokenGenerator _emailVerificationTokenGenerator;
 
     public LoginUserHandler(
         IdentityDbContext dbContext,
         IPublisher publisher,
-        JwtProvider jwtProvider,
         IUserPasswordHasher passwordHasher,
-        IRefreshTokenGenerator refreshTokenGenerator)
+        IOtpService otpService,
+        EmailVerificationTokenGenerator emailVerificationTokenGenerator,
+        TwoFactorTokenGenerator twoFactorTokenGenerator)
     {
         _dbContext = dbContext;
         _publisher = publisher;
-        _jwtProvider = jwtProvider;
         _passwordHasher = passwordHasher;
-        _refreshTokenGenerator = refreshTokenGenerator;
+        _otpService = otpService;
+        _twoFactorTokenGenerator = twoFactorTokenGenerator;
+        _emailVerificationTokenGenerator = emailVerificationTokenGenerator;
     }
 
     public async Task<Result<LoginUserAuthResult>> Handle(LoginUserCommand request, CancellationToken cancellationToken)
     {
         var normalizedEmail = request.Email.Trim().ToLowerInvariant();
 
-        var user= await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == normalizedEmail, cancellationToken);
+        var user= await _dbContext.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Email == normalizedEmail, cancellationToken);
 
         if (user == null)
         {
@@ -66,27 +67,44 @@ public sealed class LoginUserHandler : IRequestHandler<LoginUserCommand, Result<
                 Error.Unauthorized("Invalid email or password"));
         }
 
-        var refreshTokenPair = _refreshTokenGenerator.Generate();
-
-        var refreshToken = new Domain.Entities.RefreshToken
+        if (!user.EmailConfirmed)
         {
-            Id = Guid.NewGuid(),
-            UserId = user.Id,
-            Token = refreshTokenPair.TokenHash,
-            IsValid = true,
-            Created = DateTimeOffset.UtcNow,
-            Expires = refreshTokenPair.Expires
-        };
+            var otpGenerationResult = await _otpService.GenerateCodeAsync(
+                user.Id,
+                OtpPurpose.EmailVerification,
+                cancellationToken);
 
-        _dbContext.RefreshTokens.Add(refreshToken);
-        await _dbContext.SaveChangesAsync(cancellationToken);
+            await _publisher.Publish(
+                new EmailVerificationRequested(user.Id, user.Username, user.Email, otpGenerationResult.Code),
+                cancellationToken);
 
-        var accessToken = _jwtProvider.GenerateAccessToken(user.Id);
+            var emailConfirmationToken = _emailVerificationTokenGenerator.Generate(user.Id, otpGenerationResult.ExpiresAt);
 
-        return Result.Success(new LoginUserAuthResult(
-            user.Id,
-            accessToken,
-            refreshTokenPair.RawToken,
-            refreshTokenPair.Expires));
+            return Result.Success(new LoginUserAuthResult(
+                UserId: user.Id,
+                Status: LoginFlowStatus.RequiresEmailConfirmation,
+                EmailConfirmationToken: emailConfirmationToken,
+                ExpiresAt: otpGenerationResult.ExpiresAt
+            ));
+        }
+        else
+        {
+            var otpGenerationResult = await _otpService.GenerateCodeAsync(
+                user.Id,
+                OtpPurpose.TwoFactorAuth,
+                cancellationToken);
+
+            await _publisher.Publish(
+                new TwoFactorAuthRequested(user.Id, user.Username, user.Email, otpGenerationResult.Code), cancellationToken);
+
+            var twoFactorToken = _twoFactorTokenGenerator.Generate(user.Id, otpGenerationResult.ExpiresAt);
+
+            return Result.Success(new LoginUserAuthResult(
+                UserId: user.Id,
+                Status: LoginFlowStatus.RequiresTwoFactor,
+                TwoFactorToken: twoFactorToken,
+                ExpiresAt: otpGenerationResult.ExpiresAt
+            ));
+        }
     }
 }

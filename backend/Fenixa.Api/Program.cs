@@ -7,8 +7,11 @@ using Identity;
 using Identity.Features.LoginUser;
 using Identity.Features.RefreshToken;
 using Identity.Features.RegisterUser;
+using Identity.Features.TwoFactorAuth;
+using Identity.Features.VerifyEmail;
+using Identity.Features.LogOut;
 using Identity.Features.UpdateGeminiKey;
-using Identity.Infrastructure;
+using Identity.Infrastructure.Options;
 using Profile;
 using Profile.Features.GetUserSettings;
 using Profile.Features.UpdateSettings;
@@ -46,10 +49,21 @@ builder.Services.AddScoped<ICurrentUserContext, CurrentUserContext>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    options.InstanceName = "Fenixa_";
+});
+
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssemblies(
         typeof(RegisterUserCommand).Assembly,
+        typeof(TwoFactorAuthCommand).Assembly,
+        typeof(LoginUserCommand).Assembly, 
+        typeof(LogoutUserCommand).Assembly,
+        typeof(VerifyEmailCommand).Assembly,
+
         typeof(GetUserSettingsQuery).Assembly,
         typeof(Content.Features.CreateDeck.CreateDeckCommand).Assembly,
         typeof(ReviewCardCommand).Assembly);

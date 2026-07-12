@@ -28,6 +28,7 @@ public static class ResultHttpExtensions
     {
         ErrorType.NotFound => Results.NotFound(new { error.Code, error.Message }),
         ErrorType.Conflict => Results.Conflict(new { error.Code, error.Message }),
+        ErrorType.Unauthorized => Results.Unauthorized(),
         ErrorType.Forbidden => Results.Json(
             new { error.Code, error.Message },
             statusCode: StatusCodes.Status403Forbidden),

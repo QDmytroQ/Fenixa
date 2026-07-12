@@ -8,5 +8,6 @@ public class User
     public string PasswordHash { get; set; } = string.Empty;
     public string GeminiApiKeyEncrypted { get; set; } = string.Empty;
     public DateTimeOffset CreatedAt { get; set; }
+    public bool EmailConfirmed { get; set; } = false;
     public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 }

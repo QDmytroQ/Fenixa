@@ -11,14 +11,6 @@ using Shared.Results;
 
 namespace Identity.Features.RefreshToken;
 
-public sealed class RefreshTokenCommandValidator : AbstractValidator<RefreshTokenCommand>
-{
-    public RefreshTokenCommandValidator()
-    {
-        RuleFor(x => x.RefreshToken).NotEmpty();
-    }
-}
-
 public sealed class RefreshTokenHandler : IRequestHandler<RefreshTokenCommand, Result<RefreshTokenAuthResult>>
 {
     private readonly IRefreshTokenGenerator _refreshTokenGenerator;
@@ -51,15 +43,23 @@ public sealed class RefreshTokenHandler : IRequestHandler<RefreshTokenCommand, R
 
         if (!currentToken.IsValid)
         {
-            await _dbContext.RefreshTokens
-                .Where(t => t.UserId == currentToken.UserId && t.IsValid)
-                .ExecuteUpdateAsync(s => s
-                    .SetProperty(t => t.IsValid, false)
-                    .SetProperty(t => t.RevokedAt, DateTimeOffset.UtcNow),
-                    cancellationToken);
+            if (currentToken.RevokedAt!.Value.AddSeconds(10) < DateTimeOffset.UtcNow)
+            {
+                await _dbContext.RefreshTokens
+                    .Where(t => t.UserId == currentToken.UserId && t.IsValid)
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(t => t.IsValid, false)
+                        .SetProperty(t => t.RevokedAt, DateTimeOffset.UtcNow),
+                        cancellationToken);
 
-            return Result.Failure<RefreshTokenAuthResult>(
-                Error.Unauthorized("Refresh token reuse detected. All sessions revoked."));
+                return Result.Failure<RefreshTokenAuthResult>(
+                    Error.Unauthorized("Refresh token reuse detected. All sessions revoked."));
+            }
+        }
+        else
+        {
+            currentToken.IsValid = false;
+            currentToken.RevokedAt = DateTimeOffset.UtcNow;
         }
 
         currentToken.IsValid = false;

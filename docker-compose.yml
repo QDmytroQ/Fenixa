@@ -28,6 +28,21 @@ services:
       fenixa-db:
         condition: service_healthy
 
+  fenixa-redis:
+    image: redis:7-alpine
+    container_name: fenixa-redis
+    restart: always
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data # Зберігає дані кешу на диску
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
   fenixa-backend:
     image: fenixa-backend
     container_name: fenixa-backend
@@ -39,6 +54,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=${APP_ENV}
       - ConnectionStrings__DefaultConnection=Server=fenixa-db;Database=${DB_NAME};User Id=${DB_USER};Password=${DB_PASSWORD};TrustServerCertificate=True;
+      - ConnectionStrings__Redis=fenixa-redis:6379,abortConnect=false
     secrets:
       - source: backend_private_key
         target: /app/keys/private.pem
@@ -49,9 +65,12 @@ services:
     depends_on:
       fenixa-db:
         condition: service_healthy
+      fenixa-redis:
+        condition: service_healthy
 
 volumes:
   mssql-data:
+  redis-data:
 secrets:
   backend_private_key:
     file: ./secrets/private.pem

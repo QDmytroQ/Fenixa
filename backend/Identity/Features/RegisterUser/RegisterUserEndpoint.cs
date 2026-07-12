@@ -13,8 +13,7 @@ public static class RegisterUserEndpoint
         group.MapPost("/register", async (
             RegisterUserRequest request,
             IMediator mediator,
-            IAuthCookieService authCookieService,
-            HttpContext httpContext,
+            IEmailVerificationCookieWriter emailVerificationCookieWriter,
             CancellationToken cancellationToken) =>
         {
             var command = new RegisterUserCommand(request.Username, request.Email, request.Password);
@@ -22,13 +21,9 @@ public static class RegisterUserEndpoint
 
             return result.ToHttpResult(auth =>
             {
-                authCookieService.SetAuthCookies(
-                    httpContext,
-                    auth.AccessToken,
-                    auth.RawRefreshToken,
-                    auth.RefreshExpires);
-
-                return Results.Ok(new RegisterUserResponse(auth.UserId));
+                emailVerificationCookieWriter.Append(auth.Token, auth.ExpiresAt);
+                return Results.Ok(
+                    new RegisterUserResponse(auth.UserId, $"To complete your registration, enter the confirmation code sent to your email address. The code will expire at {auth.ExpiresAt}."));
             });
         });
 

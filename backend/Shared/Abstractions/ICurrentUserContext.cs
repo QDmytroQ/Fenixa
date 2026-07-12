@@ -2,5 +2,5 @@ namespace Shared.Abstractions;
 
 public interface ICurrentUserContext
 {
-    Guid? UserId { get; }
+    Guid UserId { get; }
 }

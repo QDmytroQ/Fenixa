@@ -12,12 +12,12 @@ public sealed class CurrentUserContext : ICurrentUserContext
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public Guid? UserId
+    public Guid UserId
     {
         get
         {
             var userId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return Guid.TryParse(userId, out var id) ? id : null;
+            return Guid.TryParse(userId, out var id) ? id : throw new InvalidOperationException("User ID is not available.");
         }
     }
 }

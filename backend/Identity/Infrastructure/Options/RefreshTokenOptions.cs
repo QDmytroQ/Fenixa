@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Identity.Infrastructure
+namespace Identity.Infrastructure.Options
 {
     public class RefreshTokenOptions
     {

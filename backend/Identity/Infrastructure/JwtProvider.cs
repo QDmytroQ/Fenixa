@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Identity.Infrastructure.Options;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -8,7 +9,6 @@ namespace Identity.Infrastructure
 {
     public sealed class JwtProvider : IDisposable
     {
-        private const int AccessTokenLifetimeMinutes = 15;
 
         private static readonly JwtSecurityTokenHandler _handler = new();
 
@@ -47,26 +47,13 @@ namespace Identity.Infrastructure
             _credentials = new SigningCredentials(securityKey, SecurityAlgorithms.RsaSha256);
         }
 
-        public string GenerateAccessToken(Guid userId)
-        {
-            Claim[] claims =
-            [
-                new(ClaimTypes.NameIdentifier, userId.ToString()),
-                new("tokenType", "access"),
-                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            ];
-
-            return GenerateTokenInternal(claims, 
-                DateTime.UtcNow.AddMinutes(AccessTokenLifetimeMinutes));
-        }
-
-        private string GenerateTokenInternal(Claim[] claims, DateTime expires)
+        public string GenerateToken(IEnumerable<Claim> claims, DateTimeOffset expires)
         {
             var token = new JwtSecurityToken(
                 issuer: _issuer,
                 audience: _audience,
                 claims: claims,
-                expires: expires,
+                expires: expires.UtcDateTime,
                 signingCredentials: _credentials);
 
             return _handler.WriteToken(token);

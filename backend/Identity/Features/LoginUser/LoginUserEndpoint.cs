@@ -1,4 +1,5 @@
 using Identity.Infrastructure;
+using Identity.Domain;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 
@@ -13,7 +14,8 @@ public static class LoginUserEndpoint
         group.MapPost("/login", async (
             LoginUserRequest request,
             IMediator mediator,
-            IAuthCookieService authCookieService,
+            ITwoFactorAuthCookieWriter twoFactorAuthCookieWriter,
+            IEmailVerificationCookieWriter emailConfirmationCookieWriter,
             HttpContext httpContext,
             CancellationToken cancellationToken) =>
         {
@@ -22,13 +24,26 @@ public static class LoginUserEndpoint
 
             return result.ToHttpResult(auth =>
             {
-                authCookieService.SetAuthCookies(
-                    httpContext,
-                    auth.AccessToken,
-                    auth.RawRefreshToken,
-                    auth.RefreshExpires);
+                if (auth.Status == LoginFlowStatus.RequiresEmailConfirmation)
+                {
+                    emailConfirmationCookieWriter.Append(
+                        auth.EmailConfirmationToken!,
+                        auth.ExpiresAt!.Value);
 
-                return Results.Ok(new LoginUserResponse(auth.UserId));
+                    return Results.Ok(new LoginUserResponse(
+                        UserId: auth.UserId,
+                        NextStep: auth.Status.ToString()
+                    ));
+                }
+
+                twoFactorAuthCookieWriter.Append(
+                    auth.TwoFactorToken!,
+                    auth.ExpiresAt!.Value);
+
+                return Results.Ok(new LoginUserResponse(
+                    UserId: auth.UserId,
+                    NextStep: auth.Status.ToString() // Поверне "RequiresTwoFactor"
+                ));
             });
         });
 

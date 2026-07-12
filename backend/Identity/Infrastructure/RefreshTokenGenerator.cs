@@ -1,3 +1,4 @@
+using Identity.Infrastructure.Options;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -14,8 +15,8 @@ public sealed class RefreshTokenGenerator : IRefreshTokenGenerator
     public RefreshTokenPair Generate()
     {
         var rawToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-        var expires = DateTimeOffset.UtcNow.AddDays(_tokenOptions.LifetimeDays);
-        return new RefreshTokenPair(rawToken, HashToken(rawToken), expires);
+        var expiresAt = DateTimeOffset.UtcNow.AddDays(_tokenOptions.LifetimeDays);
+        return new RefreshTokenPair(rawToken, HashToken(rawToken), expiresAt);
     }
 
     public string HashToken(string rawToken)

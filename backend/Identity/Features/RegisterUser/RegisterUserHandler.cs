@@ -1,4 +1,5 @@
 using FluentValidation;
+using Identity.Domain;
 using Identity.Domain.Entities;
 using Identity.Infrastructure;
 using Identity.Persistence;
@@ -6,7 +7,6 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Shared.IntegrationEvents;
 using Shared.Results;
-using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
 
 namespace Identity.Features.RegisterUser;
@@ -42,22 +42,25 @@ public sealed class RegisterUserHandler : IRequestHandler<RegisterUserCommand, R
 {
     private readonly IdentityDbContext _dbContext;
     private readonly IPublisher _publisher;
-    private readonly JwtProvider _jwtProvider;
+    private readonly IOtpService _otpService;
+    private readonly EmailVerificationTokenGenerator _emailVerificationTokenGenerator;
     private readonly IUserPasswordHasher _passwordHasher;
-    private readonly IRefreshTokenGenerator _refreshTokenGenerator;
+
 
     public RegisterUserHandler(
         IdentityDbContext dbContext,
         IPublisher publisher,
+        IOtpService otpService,
         JwtProvider jwtProvider,
-        IUserPasswordHasher passwordHasher,
-        IRefreshTokenGenerator refreshTokenGenerator)
+        EmailVerificationTokenGenerator emailVerificationTokenGenerator,
+        IUserPasswordHasher passwordHasher)
     {
         _dbContext = dbContext;
         _publisher = publisher;
-        _jwtProvider = jwtProvider;
+        _otpService = otpService;
+        _emailVerificationTokenGenerator = emailVerificationTokenGenerator;
         _passwordHasher = passwordHasher;
-        _refreshTokenGenerator = refreshTokenGenerator;
+
     }
 
     public async Task<Result<RegisterUserAuthResult>> Handle(
@@ -81,12 +84,34 @@ public sealed class RegisterUserHandler : IRequestHandler<RegisterUserCommand, R
             Username = request.Username.Trim(),
             Email = normalizedEmail,
             GeminiApiKeyEncrypted = string.Empty,
-            CreatedAt = DateTimeOffset.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow,
+            EmailConfirmed = false,
         };
 
         user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
 
-        var refreshTokenPair = _refreshTokenGenerator.Generate();
+        _dbContext.Users.Add(user);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        var otpGenerationResult = await _otpService.GenerateCodeAsync(
+            user.Id,
+            OtpPurpose.EmailVerification,
+            cancellationToken);
+
+        await _publisher.Publish(
+            new EmailVerificationRequested(user.Id, user.Username, user.Email, otpGenerationResult.Code),
+            cancellationToken);
+
+        var token = _emailVerificationTokenGenerator.Generate(user.Id, otpGenerationResult.ExpiresAt);
+
+        return Result.Success(new RegisterUserAuthResult(user.Id, token, otpGenerationResult.ExpiresAt));
+    }
+}
+
+/*
+ * 
+ 
+var refreshTokenPair = _refreshTokenGenerator.Generate();
 
         var refreshToken = new Domain.Entities.RefreshToken
         {
@@ -98,20 +123,7 @@ public sealed class RegisterUserHandler : IRequestHandler<RegisterUserCommand, R
             Expires = refreshTokenPair.Expires
         };
 
-        _dbContext.Users.Add(user);
-        _dbContext.RefreshTokens.Add(refreshToken);
-        await _dbContext.SaveChangesAsync(cancellationToken);
-
-        await _publisher.Publish(
-            new UserRegisteredEvent(user.Id, user.Username, user.Email),
-            cancellationToken);
+_dbContext.RefreshTokens.Add(refreshToken);
 
         var accessToken = _jwtProvider.GenerateAccessToken(user.Id);
-
-        return Result.Success(new RegisterUserAuthResult(
-            user.Id,
-            accessToken,
-            refreshTokenPair.RawToken,
-            refreshTokenPair.Expires));
-    }
-}
+*/

@@ -1,9 +1,14 @@
 using FluentValidation;
+using Identity.Domain;
 using Identity.Features.LoginUser;
+using Identity.Features.LogOut;
 using Identity.Features.RefreshToken;
 using Identity.Features.RegisterUser;
+using Identity.Features.TwoFactorAuth;
 using Identity.Features.UpdateGeminiKey;
+using Identity.Features.VerifyEmail;
 using Identity.Infrastructure;
+using Identity.Infrastructure.Options;
 using Identity.Persistence;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
@@ -25,14 +30,36 @@ public static class IdentityModuleExtensions
                 sql => sql.MigrationsHistoryTable("__EFMigrationsHistory", "identity")));
 
         services.Configure<RefreshTokenOptions>(configuration.GetSection("RefreshToken"));
+        services.Configure<AccessTokenOptions>(configuration.GetSection("AccessToken"));
+        services.Configure<OtpOptions>(options =>
+        {
+            options.Lifetimes = new Dictionary<OtpPurpose, TimeSpan>
+            {
+                { OtpPurpose.TwoFactorAuth, TimeSpan.FromMinutes(5) },
+                { OtpPurpose.PasswordReset, TimeSpan.FromMinutes(15) },
+                { OtpPurpose.EmailVerification, TimeSpan.FromHours(1) }
+            };
+            options.DefaultLifetime = TimeSpan.FromMinutes(5);
+        });
         services.AddSingleton(Microsoft.Extensions.Options.Options.Create(cryptoOptions));
         services.AddSingleton<JwtProvider>();
+
+        services.AddScoped<IdentityCookieWriter>();
+        services.AddScoped<IAuthCookieWriter>(sp => sp.GetRequiredService<IdentityCookieWriter>());
+        services.AddScoped<IEmailVerificationCookieWriter>(sp => sp.GetRequiredService<IdentityCookieWriter>());
+        services.AddScoped<ITwoFactorAuthCookieWriter>(sp => sp.GetRequiredService<IdentityCookieWriter>());
         services.AddScoped<IGeminiKeyEncryptor, GeminiKeyEncryptor>();
         services.AddScoped<IUserPasswordHasher, UserPasswordHasher>();
         services.AddScoped<IRefreshTokenGenerator, RefreshTokenGenerator>();
-        services.AddScoped<IAuthCookieService, AuthCookieService>();
+        services.AddScoped<ITwoFactorTokenGenerator, TwoFactorTokenGenerator>();
+        services.AddScoped<IEmailVerificationTokenGenerator, EmailVerificationTokenGenerator>();
+        services.AddScoped<IOtpService, OtpService>();
+        services.AddScoped<IOtpRepository, RedisOtpRepository>();
 
         services.AddValidatorsFromAssembly(typeof(RegisterUserCommandValidator).Assembly);
+        services.AddValidatorsFromAssembly(typeof(LoginUserCommandValidator).Assembly);
+        services.AddValidatorsFromAssembly(typeof(VerifyEmailCommandValidator).Assembly);
+        services.AddValidatorsFromAssembly(typeof(TwoFactorAuthCommandValidator).Assembly);
 
         services.AddApiAuthentication(cryptoOptions);
 
@@ -48,6 +75,7 @@ public static class IdentityModuleExtensions
         group.MapLoginUserEndpoint();
         group.MapRefreshTokenEndpoint();
         group.MapUpdateGeminiKeyEndpoint();
+        group.MapLogoutUserEndpoint();
 
         return app;
     }

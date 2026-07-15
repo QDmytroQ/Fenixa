@@ -14,12 +14,12 @@ public static class UpdateGeminiKeyEndpoint
             Shared.Abstractions.ICurrentUserContext currentUser,
             CancellationToken cancellationToken) =>
         {
-            if (currentUser.UserId is null)
+            if (currentUser.UserId == Guid.Empty)
             {
                 return Results.Unauthorized();
             }
 
-            var command = new UpdateGeminiKeyCommand(currentUser.UserId.Value, request.ApiKey);
+            var command = new UpdateGeminiKeyCommand(currentUser.UserId, request.ApiKey);
             await mediator.Send(command, cancellationToken);
             return Results.NoContent();
         })

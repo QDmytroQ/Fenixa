@@ -13,12 +13,12 @@ public static class DeleteDeckEndpoint
             ICurrentUserContext currentUser,
             CancellationToken cancellationToken) =>
         {
-            if (currentUser.UserId is null)
+            if (currentUser.UserId == Guid.Empty)
             {
                 return Results.Unauthorized();
             }
 
-            var command = new DeleteDeckCommand(currentUser.UserId.Value, deckId);
+            var command = new DeleteDeckCommand(currentUser.UserId, deckId);
             await mediator.Send(command, cancellationToken);
             return Results.NoContent();
         })

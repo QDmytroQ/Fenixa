@@ -14,13 +14,13 @@ public static class GetStudySessionEndpoint
             ICurrentUserContext currentUser,
             CancellationToken cancellationToken) =>
         {
-            if (currentUser.UserId is null)
+            if (currentUser.UserId == Guid.Empty)
             {
                 return Results.Unauthorized();
             }
 
             var query = new GetStudySessionQuery(
-                currentUser.UserId.Value,
+                currentUser.UserId,
                 targetLanguage,
                 maxCards <= 0 ? 20 : maxCards);
 

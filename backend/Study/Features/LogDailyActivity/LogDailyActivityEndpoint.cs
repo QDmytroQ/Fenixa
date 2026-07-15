@@ -12,12 +12,12 @@ public static class LogDailyActivityEndpoint
             ICurrentUserContext currentUser,
             CancellationToken cancellationToken) =>
         {
-            if (currentUser.UserId is null)
+            if (currentUser.UserId == Guid.Empty)
             {
                 return Results.Unauthorized();
             }
 
-            var command = new LogDailyActivityCommand(currentUser.UserId.Value);
+            var command = new LogDailyActivityCommand(currentUser.UserId);
             var response = await mediator.Send(command, cancellationToken);
             return Results.Ok(response);
         })

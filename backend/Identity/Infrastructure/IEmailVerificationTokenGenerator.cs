@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Identity.Infrastructure
 {
-    internal interface IEmailVerificationTokenGenerator
+    public interface IEmailVerificationTokenGenerator
     {
         string Generate(Guid userId, DateTimeOffset expiresAt);
     }

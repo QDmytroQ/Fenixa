@@ -1,4 +1,5 @@
 using Identity.Infrastructure.Options;
+using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -7,9 +8,9 @@ namespace Identity.Infrastructure;
 public sealed class RefreshTokenGenerator : IRefreshTokenGenerator
 {
     private readonly RefreshTokenOptions _tokenOptions;
-    public RefreshTokenGenerator(RefreshTokenOptions tokenOptions)
+    public RefreshTokenGenerator(IOptions<RefreshTokenOptions> tokenOptions)
     {
-        _tokenOptions = tokenOptions;
+        _tokenOptions = tokenOptions.Value;
     }
 
     public RefreshTokenPair Generate()

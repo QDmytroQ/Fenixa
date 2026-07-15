@@ -16,13 +16,13 @@ public static class UpdateDeckEndpoint
             ICurrentUserContext currentUser,
             CancellationToken cancellationToken) =>
         {
-            if (currentUser.UserId is null)
+            if (currentUser.UserId == Guid.Empty)
             {
                 return Results.Unauthorized();
             }
 
             var command = new UpdateDeckCommand(
-                currentUser.UserId.Value,
+                currentUser.UserId,
                 deckId,
                 request.Name,
                 request.IsPublic);

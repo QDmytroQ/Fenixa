@@ -13,12 +13,12 @@ public static class GetDeckCardsEndpoint
             ICurrentUserContext currentUser,
             CancellationToken cancellationToken) =>
         {
-            if (currentUser.UserId is null)
+            if (currentUser.UserId == Guid.Empty)
             {
                 return Results.Unauthorized();
             }
 
-            var query = new GetDeckCardsQuery(currentUser.UserId.Value, deckId);
+            var query = new GetDeckCardsQuery(currentUser.UserId, deckId);
             var response = await mediator.Send(query, cancellationToken);
             return Results.Ok(response);
         })

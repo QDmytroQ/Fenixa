@@ -12,12 +12,12 @@ public static class GetStudyStatisticsEndpoint
             ICurrentUserContext currentUser,
             CancellationToken cancellationToken) =>
         {
-            if (currentUser.UserId is null)
+            if (currentUser.UserId == Guid.Empty)
             {
                 return Results.Unauthorized();
             }
 
-            var query = new GetStudyStatisticsQuery(currentUser.UserId.Value);
+            var query = new GetStudyStatisticsQuery(currentUser.UserId);
             var response = await mediator.Send(query, cancellationToken);
             return Results.Ok(response);
         })

@@ -1,5 +1,6 @@
 ﻿using Identity.Domain;
 using Identity.Infrastructure.Options;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
@@ -13,10 +14,10 @@ namespace Identity.Infrastructure
         private readonly OtpOptions _otpOptions;
         private readonly TimeProvider _timeProvider;
 
-        public OtpService(IOtpRepository otpRepository, OtpOptions otpOptions, TimeProvider timeProvider)
+        public OtpService(IOtpRepository otpRepository, IOptions<OtpOptions> otpOptions, TimeProvider timeProvider)
         {
             _otpRepository = otpRepository;
-            _otpOptions = otpOptions;
+            _otpOptions = otpOptions.Value;
             _timeProvider = timeProvider;
         }
 

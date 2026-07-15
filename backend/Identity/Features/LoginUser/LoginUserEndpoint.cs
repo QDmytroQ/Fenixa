@@ -1,7 +1,7 @@
 using Identity.Infrastructure;
 using Identity.Domain;
 using MediatR;
-using Microsoft.AspNetCore.Http;
+using Shared.Web;
 
 namespace Identity.Features.LoginUser;
 

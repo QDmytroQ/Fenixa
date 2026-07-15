@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Identity.Infrastructure
 {
-    internal interface ITwoFactorTokenGenerator
+    public interface ITwoFactorTokenGenerator
     {
         string Generate(Guid userId, DateTimeOffset expiresAt);
     }

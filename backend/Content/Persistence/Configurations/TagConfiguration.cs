@@ -17,7 +17,7 @@ public sealed class TagConfiguration : IEntityTypeConfiguration<Tag>
 
         builder.Property(t => t.Name)
             .IsRequired()
-            .HasMaxLength(100);
+            .HasMaxLength(30);
 
         builder.HasMany(t => t.CardTags)
             .WithOne(ct => ct.Tag)

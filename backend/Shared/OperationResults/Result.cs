@@ -1,4 +1,4 @@
-namespace Shared.Results;
+namespace Shared.OperationResults;
 
 public class Result
 {

@@ -1,6 +1,7 @@
-using Shared.Results;
+using Shared.OperationResults;
+using Microsoft.AspNetCore.Http;
 
-namespace Identity.Infrastructure;
+namespace Shared.Web;
 
 public static class ResultHttpExtensions
 {
@@ -9,6 +10,16 @@ public static class ResultHttpExtensions
         if (result.IsSuccess)
         {
             return Results.Ok();
+        }
+
+        return MapError(result.Error);
+    }
+
+    public static IResult ToHttpResult(this Result result, Func<IResult> onSuccess)
+    {
+        if (result.IsSuccess)
+        {
+            return onSuccess();
         }
 
         return MapError(result.Error);

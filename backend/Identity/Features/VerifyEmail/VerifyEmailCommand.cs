@@ -1,10 +1,6 @@
-﻿
-using Identity.Features.RegisterUser;
-using MediatR;
-using Shared.Results;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using MediatR;
+using Shared.OperationResults;
+
 
 namespace Identity.Features.VerifyEmail
 {

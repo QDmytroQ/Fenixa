@@ -6,7 +6,7 @@ using Identity.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Shared.IntegrationEvents;
-using Shared.Results;
+using Shared.OperationResults;
 
 
 namespace Identity.Features.VerifyEmail

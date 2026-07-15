@@ -1,5 +1,5 @@
 using MediatR;
-using Shared.Results;
+using Shared.OperationResults;
 
 namespace Identity.Features.RegisterUser;
 

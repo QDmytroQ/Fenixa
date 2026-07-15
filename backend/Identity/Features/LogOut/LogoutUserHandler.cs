@@ -4,7 +4,7 @@ using Identity.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Shared.Abstractions;
-using Shared.Results;
+using Shared.OperationResults;
 using System;
 using System.Collections.Generic;
 using System.Text;

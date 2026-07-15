@@ -1,6 +1,6 @@
 ﻿using Identity.Features.VerifyEmail;
 using MediatR;
-using Shared.Results;
+using Shared.OperationResults;
 using System;
 using System.Collections.Generic;
 using System.Text;

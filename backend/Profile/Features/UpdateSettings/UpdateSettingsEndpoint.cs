@@ -20,13 +20,13 @@ public static class UpdateSettingsEndpoint
             ICurrentUserContext currentUser,
             CancellationToken cancellationToken) =>
         {
-            if (currentUser.UserId is null)
+            if (currentUser.UserId == Guid.Empty)
             {
                 return Results.Unauthorized();
             }
 
             var command = new UpdateSettingsCommand(
-                currentUser.UserId.Value,
+                currentUser.UserId,
                 request.Timezone,
                 request.Theme,
                 request.AppLanguage,

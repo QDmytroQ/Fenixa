@@ -1,5 +1,5 @@
 using MediatR;
-using Shared.Results;
+using Shared.OperationResults;
 using Identity.Domain;
 
 namespace Identity.Features.LoginUser;

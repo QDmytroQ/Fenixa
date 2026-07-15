@@ -12,12 +12,12 @@ public static class GetUserSettingsEndpoint
             ICurrentUserContext currentUser,
             CancellationToken cancellationToken) =>
         {
-            if (currentUser.UserId is null)
+            if (currentUser.UserId == Guid.Empty)
             {
                 return Results.Unauthorized();
             }
 
-            var query = new GetUserSettingsQuery(currentUser.UserId.Value);
+            var query = new GetUserSettingsQuery(currentUser.UserId);
             var response = await mediator.Send(query, cancellationToken);
             return Results.Ok(response);
         })

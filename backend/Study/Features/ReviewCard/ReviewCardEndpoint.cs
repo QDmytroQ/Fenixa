@@ -17,12 +17,12 @@ public static class ReviewCardEndpoint
             ICurrentUserContext currentUser,
             CancellationToken cancellationToken) =>
         {
-            if (currentUser.UserId is null)
+            if (currentUser.UserId == Guid.Empty)
             {
                 return Results.Unauthorized();
             }
 
-            var command = new ReviewCardCommand(currentUser.UserId.Value, cardId, request.Rating);
+            var command = new ReviewCardCommand(currentUser.UserId, cardId, request.Rating);
             var response = await mediator.Send(command, cancellationToken);
             return Results.Ok(response);
         })

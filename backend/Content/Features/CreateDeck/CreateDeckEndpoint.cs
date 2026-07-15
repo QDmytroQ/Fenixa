@@ -15,13 +15,13 @@ public static class CreateDeckEndpoint
             ICurrentUserContext currentUser,
             CancellationToken cancellationToken) =>
         {
-            if (currentUser.UserId is null)
+            if (currentUser.UserId == Guid.Empty)
             {
                 return Results.Unauthorized();
             }
 
             var command = new CreateDeckCommand(
-                currentUser.UserId.Value,
+                currentUser.UserId,
                 request.Name,
                 request.TargetLanguage);
 

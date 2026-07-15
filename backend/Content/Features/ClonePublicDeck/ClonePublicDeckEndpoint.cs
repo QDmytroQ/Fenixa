@@ -13,12 +13,12 @@ public static class ClonePublicDeckEndpoint
             ICurrentUserContext currentUser,
             CancellationToken cancellationToken) =>
         {
-            if (currentUser.UserId is null)
+            if (currentUser.UserId == Guid.Empty)
             {
                 return Results.Unauthorized();
             }
 
-            var command = new ClonePublicDeckCommand(currentUser.UserId.Value, sourceDeckId);
+            var command = new ClonePublicDeckCommand(currentUser.UserId, sourceDeckId);
             var response = await mediator.Send(command, cancellationToken);
             return Results.Created($"/api/content/decks/{response.NewDeckId}", response);
         })

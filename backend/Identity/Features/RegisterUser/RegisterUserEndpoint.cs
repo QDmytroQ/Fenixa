@@ -1,6 +1,6 @@
 using Identity.Infrastructure;
 using MediatR;
-using Microsoft.AspNetCore.Http;
+using Shared.Web;
 
 namespace Identity.Features.RegisterUser;
 

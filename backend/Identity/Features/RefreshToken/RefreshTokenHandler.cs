@@ -7,21 +7,21 @@ using Identity.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Shared.Abstractions;
-using Shared.Results;
+using Shared.OperationResults;
 
 namespace Identity.Features.RefreshToken;
 
 public sealed class RefreshTokenHandler : IRequestHandler<RefreshTokenCommand, Result<RefreshTokenAuthResult>>
 {
     private readonly IRefreshTokenGenerator _refreshTokenGenerator;
+    private readonly IAccessTokenGenerator _accessTokenGenerator;
     private readonly IdentityDbContext _dbContext;
     private readonly ICurrentUserContext _currentUser;
-    private readonly JwtProvider _jwtProvider;
 
-    public RefreshTokenHandler(IRefreshTokenGenerator refreshTokenGenerator, JwtProvider jwtProvider, IdentityDbContext dbContext, ICurrentUserContext currentUser)
+    public RefreshTokenHandler(IRefreshTokenGenerator refreshTokenGenerator, IAccessTokenGenerator accessTokenGenerator, IdentityDbContext dbContext, ICurrentUserContext currentUser)
     {
         _refreshTokenGenerator = refreshTokenGenerator;
-        _jwtProvider = jwtProvider;
+        _accessTokenGenerator = accessTokenGenerator;
         _dbContext = dbContext;
         _currentUser = currentUser;
     }
@@ -62,9 +62,6 @@ public sealed class RefreshTokenHandler : IRequestHandler<RefreshTokenCommand, R
             currentToken.RevokedAt = DateTimeOffset.UtcNow;
         }
 
-        currentToken.IsValid = false;
-        currentToken.RevokedAt = DateTimeOffset.UtcNow;
-
         var newRefreshTokenPair = _refreshTokenGenerator.Generate();
 
         var expirationDate = currentToken.Expires;
@@ -82,11 +79,12 @@ public sealed class RefreshTokenHandler : IRequestHandler<RefreshTokenCommand, R
         _dbContext.RefreshTokens.Add(newRefreshToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        var accessToken = _jwtProvider.GenerateAccessToken(currentToken.UserId);
+        var accessToken = _accessTokenGenerator.Generate(currentToken.UserId);
 
         return Result.Success(new RefreshTokenAuthResult(
             currentToken.UserId,
-            accessToken, 
+            accessToken.Token,
+            accessToken.Expires,
             newRefreshTokenPair.RawToken,
             expirationDate));
     }

@@ -21,13 +21,13 @@ public static class UpdateCardEndpoint
             ICurrentUserContext currentUser,
             CancellationToken cancellationToken) =>
         {
-            if (currentUser.UserId is null)
+            if (currentUser.UserId == Guid.Empty)
             {
                 return Results.Unauthorized();
             }
 
             var command = new UpdateCardCommand(
-                currentUser.UserId.Value,
+                currentUser.UserId,
                 deckId,
                 cardId,
                 request.FrontText,

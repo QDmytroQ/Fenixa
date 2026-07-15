@@ -6,7 +6,7 @@ using Identity.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Shared.IntegrationEvents;
-using Shared.Results;
+using Shared.OperationResults;
 using System.Text.RegularExpressions;
 
 namespace Identity.Features.RegisterUser;
@@ -43,7 +43,7 @@ public sealed class RegisterUserHandler : IRequestHandler<RegisterUserCommand, R
     private readonly IdentityDbContext _dbContext;
     private readonly IPublisher _publisher;
     private readonly IOtpService _otpService;
-    private readonly EmailVerificationTokenGenerator _emailVerificationTokenGenerator;
+    private readonly IEmailVerificationTokenGenerator _emailVerificationTokenGenerator;
     private readonly IUserPasswordHasher _passwordHasher;
 
 
@@ -51,8 +51,7 @@ public sealed class RegisterUserHandler : IRequestHandler<RegisterUserCommand, R
         IdentityDbContext dbContext,
         IPublisher publisher,
         IOtpService otpService,
-        JwtProvider jwtProvider,
-        EmailVerificationTokenGenerator emailVerificationTokenGenerator,
+        IEmailVerificationTokenGenerator emailVerificationTokenGenerator,
         IUserPasswordHasher passwordHasher)
     {
         _dbContext = dbContext;

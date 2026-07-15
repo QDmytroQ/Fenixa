@@ -1,6 +1,7 @@
 ﻿using Identity.Infrastructure;
 using MediatR;
 using Shared.Abstractions;
+using Shared.Web;
 
 namespace Identity.Features.VerifyEmail
 {

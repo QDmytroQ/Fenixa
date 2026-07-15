@@ -1,6 +1,6 @@
-﻿using Identity.Features.LogOut;
-using MediatR;
+﻿using MediatR;
 using Identity.Infrastructure;
+using Shared.Web;
 
 namespace Identity.Features.LogOut
 {
@@ -10,11 +10,11 @@ namespace Identity.Features.LogOut
         {
             group.MapPost("/logout", async (
                 IMediator mediator,
-                IAuthCookieWriter authCookieService,
+                IAuthCookieWriter authCookieWriter,
                 HttpContext httpContext,
                 CancellationToken cancellationToken) =>
             {
-                var refreshToken = httpContext.Request.Cookies[AuthCookieWriter.RefreshTokenCookieName];
+                var refreshToken = httpContext.Request.Cookies[IdentityCookieWriter.RefreshTokenCookieName];
                 if (string.IsNullOrWhiteSpace(refreshToken))
                 {
                     return Results.Unauthorized();
@@ -23,13 +23,13 @@ namespace Identity.Features.LogOut
                 var command = new LogoutUserCommand(refreshToken);
                 var result = await mediator.Send(command, cancellationToken);
 
-                return result.ToHttpResult(auth =>
+                return result.ToHttpResult( () =>
                 {
-                    authCookieService.Clear();
+                    authCookieWriter.Clear();
 
-                    return Results.Ok(new LogoutUserResponse(auth.UserId));
+                    return Results.Ok();
                 });
-            });
+            }).RequireAuthorization();
 
             return group;
         }

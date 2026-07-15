@@ -1,4 +1,4 @@
-namespace Shared.Results;
+namespace Shared.OperationResults;
 
 public sealed record Error(string Code, string Message, ErrorType Type = ErrorType.Failure)
 {

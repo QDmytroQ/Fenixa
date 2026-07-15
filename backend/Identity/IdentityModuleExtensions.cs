@@ -51,6 +51,7 @@ public static class IdentityModuleExtensions
         services.AddScoped<IGeminiKeyEncryptor, GeminiKeyEncryptor>();
         services.AddScoped<IUserPasswordHasher, UserPasswordHasher>();
         services.AddScoped<IRefreshTokenGenerator, RefreshTokenGenerator>();
+        services.AddScoped<IAccessTokenGenerator, AccessTokenGenerator>();
         services.AddScoped<ITwoFactorTokenGenerator, TwoFactorTokenGenerator>();
         services.AddScoped<IEmailVerificationTokenGenerator, EmailVerificationTokenGenerator>();
         services.AddScoped<IOtpService, OtpService>();
@@ -76,6 +77,8 @@ public static class IdentityModuleExtensions
         group.MapRefreshTokenEndpoint();
         group.MapUpdateGeminiKeyEndpoint();
         group.MapLogoutUserEndpoint();
+        group.MapVerifyEmailEndpoint();
+        group.MapTwoFactorAuthEndpoint();
 
         return app;
     }

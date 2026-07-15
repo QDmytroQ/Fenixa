@@ -5,7 +5,7 @@ using Identity.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Shared.IntegrationEvents;
-using Shared.Results;
+using Shared.OperationResults;
 
 namespace Identity.Features.LoginUser;
 
@@ -24,16 +24,16 @@ public sealed class LoginUserHandler : IRequestHandler<LoginUserCommand, Result<
     private readonly IPublisher _publisher;
     private readonly IUserPasswordHasher _passwordHasher;
     private readonly IOtpService _otpService;
-    private readonly TwoFactorTokenGenerator _twoFactorTokenGenerator;
-    private readonly EmailVerificationTokenGenerator _emailVerificationTokenGenerator;
+    private readonly ITwoFactorTokenGenerator _twoFactorTokenGenerator;
+    private readonly IEmailVerificationTokenGenerator _emailVerificationTokenGenerator;
 
     public LoginUserHandler(
         IdentityDbContext dbContext,
         IPublisher publisher,
         IUserPasswordHasher passwordHasher,
         IOtpService otpService,
-        EmailVerificationTokenGenerator emailVerificationTokenGenerator,
-        TwoFactorTokenGenerator twoFactorTokenGenerator)
+        IEmailVerificationTokenGenerator emailVerificationTokenGenerator,
+        ITwoFactorTokenGenerator twoFactorTokenGenerator)
     {
         _dbContext = dbContext;
         _publisher = publisher;

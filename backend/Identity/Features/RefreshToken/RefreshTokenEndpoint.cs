@@ -1,6 +1,6 @@
 using Identity.Infrastructure;
 using MediatR;
-using Microsoft.AspNetCore.Http;
+using Shared.Web;
 
 namespace Identity.Features.RefreshToken;
 
@@ -10,11 +10,11 @@ public static class RefreshTokenEndpoint
     {
         group.MapPost("/refresh", async (
             IMediator mediator,
-            IAuthCookieWriter authCookieService,
+            IAuthCookieWriter authCookieWriter,
             HttpContext httpContext,
             CancellationToken cancellationToken) =>
         {
-            var refreshToken = httpContext.Request.Cookies[AuthCookieWriter.RefreshTokenCookieName];
+            var refreshToken = httpContext.Request.Cookies[IdentityCookieWriter.RefreshTokenCookieName];
             if (string.IsNullOrWhiteSpace(refreshToken))
             {
                 return Results.Unauthorized();
@@ -25,15 +25,15 @@ public static class RefreshTokenEndpoint
 
             return result.ToHttpResult(auth =>
             {
-                authCookieService.Append(
-                    httpContext,
+                authCookieWriter.Append(
                     auth.AccessToken,
+                    auth.AccessExpires,
                     auth.RawRefreshToken,
                     auth.RefreshExpires);
 
                 return Results.Ok(new RefreshTokenResponse(auth.UserId));
             });
-        });
+        }).RequireAuthorization();
 
         return group;
     }

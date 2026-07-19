@@ -1,6 +1,7 @@
 using Content.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Content.Domain.Constants;
 
 namespace Content.Persistence.Configurations;
 
@@ -17,15 +18,15 @@ public sealed class CardConfiguration : IEntityTypeConfiguration<Card>
 
         builder.Property(c => c.FrontText)
             .IsRequired()
-            .HasMaxLength(2000);
+            .HasMaxLength(CardConstants.FrontTextMaxLength);
 
         builder.Property(c => c.BackText)
             .IsRequired()
-            .HasMaxLength(2000);
+            .HasMaxLength(CardConstants.BackTextMaxLength);
 
         builder.Property(c => c.ContextExample)
             .IsRequired()
-            .HasMaxLength(4000);
+            .HasMaxLength(CardConstants.ContextExampleMaxLength);
 
         builder.Property(c => c.AudioUrl)
             .IsRequired()
@@ -36,6 +37,7 @@ public sealed class CardConfiguration : IEntityTypeConfiguration<Card>
             .HasForeignKey(ct => ct.CardId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasIndex(c => c.DeckId);
+        builder.HasIndex(c => new { c.DeckId, c.FrontText })
+            .IsUnique();
     }
 }

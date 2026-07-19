@@ -1,6 +1,6 @@
 ﻿using MediatR;
 using Identity.Infrastructure;
-using Shared.Web;
+using Shared.Extensions;
 
 namespace Identity.Features.LogOut
 {

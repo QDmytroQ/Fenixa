@@ -1,13 +1,17 @@
+using Azure;
+using Content.Domain.Entities;
 using MediatR;
 using Shared.Abstractions;
+using Shared.OperationResults;
+using Shared.Extensions;
 
 namespace Content.Features.AddCard;
 
 public sealed record AddCardRequest(
+    Guid? DeckId,
     string FrontText,
     string BackText,
     string ContextExample,
-    string AudioUrl,
     IReadOnlyList<string> TagNames);
 
 public static class AddCardEndpoint
@@ -21,24 +25,28 @@ public static class AddCardEndpoint
             ICurrentUserContext currentUser,
             CancellationToken cancellationToken) =>
         {
-            if (currentUser.UserId is null)
+            if (currentUser.UserId == Guid.Empty)
             {
                 return Results.Unauthorized();
             }
 
             var command = new AddCardCommand(
-                currentUser.UserId.Value,
+                currentUser.UserId,
                 deckId,
                 request.FrontText,
                 request.BackText,
                 request.ContextExample,
-                request.AudioUrl,
                 request.TagNames);
 
-            var response = await mediator.Send(command, cancellationToken);
-            return Results.Created($"/api/content/decks/{deckId}/cards/{response.CardId}", response);
-        })
-        .RequireAuthorization();
+            var result = await mediator.Send(command, cancellationToken);
+
+            return result.ToHttpResult(auth =>
+            {
+
+                return Results.Created($"/api/content/decks/{deckId}/cards/{result.Value.CardId}", result);
+            });
+
+        }).RequireAuthorization();
 
         return group;
     }

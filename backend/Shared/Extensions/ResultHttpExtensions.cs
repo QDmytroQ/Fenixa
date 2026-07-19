@@ -1,7 +1,7 @@
 using Shared.OperationResults;
 using Microsoft.AspNetCore.Http;
 
-namespace Shared.Web;
+namespace Shared.Extensions;
 
 public static class ResultHttpExtensions
 {

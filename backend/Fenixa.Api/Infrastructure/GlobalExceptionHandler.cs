@@ -1,6 +1,9 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore; // Додаємо EF Core
+using Shared.Extensions;
+
 
 namespace Fenixa.Api.Infrastructure;
 
@@ -33,6 +36,30 @@ public sealed class GlobalExceptionHandler : IExceptionHandler
                 Status = StatusCodes.Status400BadRequest,
                 Title = "Validation failed."
             }, cancellationToken);
+
+            return true;
+        }
+
+        if (exception is DbUpdateException dbEx &&
+                    dbEx.TryGetUniqueConstraintViolation(out var rawConstraintName))
+        {
+            var cleanFieldName = DbUpdateExceptionExtensions.CleanConstraintName(rawConstraintName);
+
+            _logger.LogWarning(exception, "Unique constraint violation on constraint: {ConstraintName}", rawConstraintName);
+
+            httpContext.Response.StatusCode = StatusCodes.Status409Conflict;
+
+            var problemDetails = new ProblemDetails
+            {
+                Status = StatusCodes.Status409Conflict,
+                Title = "Resource conflict.",
+                Detail = $"A record with this '{cleanFieldName}' already exists."
+            };
+
+            problemDetails.Extensions["violatedField"] = cleanFieldName;
+            //problemDetails.Extensions["rawConstraint"] = rawConstraintName;
+
+            await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
 
             return true;
         }

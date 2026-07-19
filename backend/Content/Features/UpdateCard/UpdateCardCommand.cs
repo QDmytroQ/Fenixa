@@ -1,4 +1,6 @@
 using MediatR;
+using Shared.OperationResults;
+using Content.Features.Shared;
 
 namespace Content.Features.UpdateCard;
 
@@ -9,4 +11,5 @@ public sealed record UpdateCardCommand(
     string? FrontText,
     string? BackText,
     string? ContextExample,
-    string? AudioUrl) : IRequest;
+    string? AudioUrl,
+    IReadOnlyList<string>? TagNames) : IRequest<Result>, ICardCommand;

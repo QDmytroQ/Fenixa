@@ -1,7 +1,7 @@
 using Identity.Infrastructure;
 using Identity.Domain;
 using MediatR;
-using Shared.Web;
+using Shared.Extensions;
 
 namespace Identity.Features.LoginUser;
 

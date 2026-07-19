@@ -1,5 +1,6 @@
 using MediatR;
 using Shared.Abstractions;
+using Shared.Extensions;
 
 namespace Content.Features.UpdateCard;
 
@@ -7,7 +8,8 @@ public sealed record UpdateCardRequest(
     string? FrontText,
     string? BackText,
     string? ContextExample,
-    string? AudioUrl);
+    string? AudioUrl,
+    IReadOnlyList<string>? TagNames);
 
 public static class UpdateCardEndpoint
 {
@@ -33,10 +35,11 @@ public static class UpdateCardEndpoint
                 request.FrontText,
                 request.BackText,
                 request.ContextExample,
-                request.AudioUrl);
+                request.AudioUrl,
+                request.TagNames);
 
-            await mediator.Send(command, cancellationToken);
-            return Results.NoContent();
+            var result = await mediator.Send(command, cancellationToken);
+            return result.ToHttpResult(() => Results.NoContent());
         })
         .RequireAuthorization();
 

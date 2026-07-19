@@ -1,4 +1,4 @@
-namespace Shared.Exceptions;
+namespace Shared.Extensions;
 
 public sealed class ForbiddenException : Exception
 {

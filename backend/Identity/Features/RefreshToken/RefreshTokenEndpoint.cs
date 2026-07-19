@@ -1,6 +1,6 @@
 using Identity.Infrastructure;
 using MediatR;
-using Shared.Web;
+using Shared.Extensions;
 
 namespace Identity.Features.RefreshToken;
 
